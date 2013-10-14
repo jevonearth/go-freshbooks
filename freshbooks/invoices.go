@@ -15,26 +15,26 @@ type InvoicesService struct {
 
 // Invoice represents a FreshBooks invoice
 type Invoice struct {
-	XMLName                 xml.Name   `xml:"invoice,omitempty"`
-	ID                      *int       `xml:"invoice_id,omitempty"`
-	ClientID                *int       `xml:"client_id,omitempty"`
-	InvoiceNumber           *string    `xml:"number,omitempty"`
-	Amount                  *float32   `xml:"amount,omitempty"`
-	Currency                *string    `xml:"currency_code,omitempty"`
-	Language                *string    `xml:"language,omitempty"`
-	AmountOutstanding       *string    `xml:"amount_outstanding,omitempty"`
-	Status                  *string    `xml:"status,omitempty"`
-	Date                    *time.Time `xml:"date,omitempty"`
-	Folder                  *string    `xml:"folder,omitempty"`
-	CustomerReference       *string    `xml:"po_number,omitempty"`
-	Discount                *string    `xml:"discount,omitempty"`
-	Notes                   *string    `xml:"notes,omitempty"`
-	Terms                   *string    `xml:"terms,omitempty"`
-	RecordURL               *string    `xml:"links>view,omitempty"`
-	LastUpdated             *string    `xml:"updated,omitempty"`
-	RecurringInvoiceProfile *string    `xml:"recurring_id,omitempty"`
-	ClientName              *string    `xml:"organization,omitempty"`
-	Lines                   []Line     `xml:"lines>line,omitempty"`
+	XMLName                 xml.Name  `xml:"invoice,omitempty"`
+	ID                      *int      `xml:"invoice_id,omitempty"`
+	ClientID                *int      `xml:"client_id,omitempty"`
+	InvoiceNumber           *string   `xml:"number,omitempty"`
+	Amount                  *float32  `xml:"amount,omitempty"`
+	Currency                *string   `xml:"currency_code,omitempty"`
+	Language                *string   `xml:"language,omitempty"`
+	AmountOutstanding       *float32  `xml:"amount_outstanding,omitempty"`
+	Status                  *string   `xml:"status,omitempty"`
+	Date                    time.Time `xml:"date,omitempty"`
+	Folder                  *string   `xml:"folder,omitempty"`
+	CustomerReference       *string   `xml:"po_number,omitempty"`
+	Discount                *int      `xml:"discount,omitempty"`
+	Notes                   *string   `xml:"notes,omitempty"`
+	Terms                   *string   `xml:"terms,omitempty"`
+	RecordURL               *string   `xml:"links>view,omitempty"`
+	LastUpdated             time.Time `xml:"updated,omitempty"`
+	RecurringInvoiceProfile *int      `xml:"recurring_id,omitempty"`
+	ClientName              *string   `xml:"organization,omitempty"`
+	Lines                   []Line    `xml:"lines>line,omitempty"`
 	//TODO - Add support for missing fields
 	// `xml:"contacts"`
 	// `xml:"return_uri"`
@@ -67,20 +67,27 @@ type Line struct {
 	Type        *string  `xml:"type,omitempty"`
 }
 
+// InvoiceRequestQuery represents a API query for a single Invoice
+type InvoiceRequestQuery struct {
+	Request
+	XMLName xml.Name `xml:"request"`
+	ID      int      `xml:"invoice_id"`
+}
+
 // Get a single Invoice
 //
 // FreshBooks API Docs: http://developers.freshbooks.com/docs/invoices/#invoice.get
 func (s *InvoicesService) Get(id int) (*Invoice, *Response, error) {
 
-	var getInvoiceRequest struct {
-		Request
-		XMLName xml.Name `xml:"request"`
-		ID      int      `xml:"invoice_id"`
+	getInvoiceRequest := InvoiceRequestQuery{
+		Request: Request{Method: "invoice.get"},
+		ID:      id,
 	}
-	getInvoiceRequest.ID = id
-	getInvoiceRequest.Method = "invoice.get"
 
 	req, err := s.client.NewRequest(&getInvoiceRequest)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	invResp := new(Invoice)
 	resp, err := s.client.Do(req, invResp)

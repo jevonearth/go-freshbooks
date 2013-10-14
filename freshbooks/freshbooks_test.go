@@ -1,11 +1,16 @@
 package freshbooks_test
 
 import (
+	"encoding/xml"
+	"fmt"
 	. "github.com/jevonearth/go-freshbooks/freshbooks"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 )
 
 var _ = Describe("freshbooks NewClient", func() {
@@ -89,4 +94,59 @@ var _ = Describe("freshbooks NewRequest", func() {
 		req, _ := client.NewRequest(inBody)
 		Expect(req.Header).NotTo(HaveKey("Authorization"))
 	})
+})
+
+var _ = Describe("freshbooks Do http", func() {
+	var (
+		// mux is the HTTP request multiplexer used with the test server.
+		mux *http.ServeMux
+
+		// client is the FreshBooks client being tested
+		client *Client
+
+		// server is a test HTTP server used to provide mock API responses
+		server *httptest.Server
+	)
+
+	// setup a test HTTP server along with a freshbooks.client that is
+	// configured to talk to that test server. Tests should register handlers on
+	// mux which provide mock responses for the API method being tested
+	BeforeEach(func() {
+		// test server
+		mux = http.NewServeMux()
+		server = httptest.NewServer(mux)
+		// freshbooks
+
+		client, _ = NewClient("abc", "123", http.DefaultClient)
+		client.ServiceURL, _ = url.Parse(server.URL)
+	})
+	It("Produces a POST to the local http/testing server", func() {
+		// inBody := Request{Method: "testpostmethod"}
+
+		type foo struct {
+			A string
+		}
+
+		//Set up testing server
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+			Expect(r.Method).To(Equal("POST"))
+
+			fmt.Fprint(w, xml.Header+"<foo><A>b</A></foo>")
+		})
+
+		//prep request
+		inBody := &foo{"a"}
+		req, _ := client.NewRequest(inBody)
+
+		//prep instance of foo to recieve response
+		outBody := new(foo)
+
+		//make request
+		_, err := client.Do(req, outBody)
+
+		Expect(outBody.A).To(Equal("b"))
+		Expect(err).To(BeNil())
+	})
+
 })

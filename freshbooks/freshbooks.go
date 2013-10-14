@@ -85,11 +85,31 @@ func (c *Client) NewRequest(body interface{}) (*http.Request, error) {
 // decoded and stored in the value pointed to by v, or retured as an error if
 // and API error has occourred
 func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
-	_, err := c.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	return &Response{}, nil
+	defer resp.Body.Close()
+
+	response := &Response{Response: resp}
+
+	err = CheckResponse(resp)
+	if err != nil {
+		// even though there was an error, we still return the response
+		// so that the caller can inspect it.
+		return response, err
+	}
+
+	if v != nil {
+		err = xml.NewDecoder(resp.Body).Decode(v)
+	}
+
+	return response, err
+}
+
+func CheckResponse(r *http.Response) error {
+	//TODO
+	return nil
 }
 
 // Response is a FreshBooks API response. This wraps the standard http.Response
@@ -106,4 +126,36 @@ type Request struct {
 	Page      int      `xml:"page,omitempty"`
 	PageCount int      `xml:"-"`
 	PageSize  int      `xml:"per_page,omitempty"`
+}
+
+// Bool is a helper routine that allocates a new bool value
+// to store v and returns a pointer to it.
+func Bool(v bool) *bool {
+	p := new(bool)
+	*p = v
+	return p
+}
+
+// Int is a helper routine that allocates a new int value
+// to store v and returns a pointer to it.
+func Int(v int) *int {
+	p := new(int)
+	*p = v
+	return p
+}
+
+// Float is a helper routine that allocates a new float32 value
+// to store v ane returns a pointer to it.
+func Float(v float32) *float32 {
+	p := new(float32)
+	*p = v
+	return p
+}
+
+// String is a helper routine that allocates a new string value
+// to store v and returns a pointer to it.
+func String(v string) *string {
+	p := new(string)
+	*p = v
+	return p
 }
