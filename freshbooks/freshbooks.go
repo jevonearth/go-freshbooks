@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -14,17 +15,29 @@ const (
 
 // Client manages communication with the FreshBooks API.
 type Client struct {
-	Key        string
-	ServiceURL string
-	UserAgent  string
-	client     http.Client
 
+	// Token is the unique authorization token assigned to your FreshBooks account.
+	// Every request made the FreshBooks uses this token for HTTP basic authorization
+	// The token is based on your freshBooks password. It your FreshBooks password
+	// changes, so will your token.
+	Key string
+
+	// ServiceURL is the single point of entry to the FreshBooks API , it is
+	// derived from your account URL
+	ServiceURL *url.URL
+
+	// User agent used when communication with the FreshBooks API.
+	UserAgent string
+
+	// HTTP client used to communicate with the API.
+	client *http.Client
+
+	// Services used for talking to different resources in the FreshBooks API.
 	Invoices *InvoicesService
 }
 
-// NewClient Produces a new FreshBooks API client. Caller must provide the name for its
-// FreshBooks instance, and a valid Authentication Tokem for that instance.
-// TODO add links, and more details.
+// NewClient Produces a new FreshBooks API client. Caller must provide the ServiceURL,
+// and a Authorization Token.
 func NewClient(serviceURL, key string) *Client {
 
 	c := &Client{ServiceURL: serviceURL, Key: key, UserAgent: userAgent}
