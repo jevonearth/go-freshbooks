@@ -16,15 +16,15 @@ const (
 // Client manages communication with the FreshBooks API.
 type Client struct {
 
+	// ServiceURL is the single point of entry to the FreshBooks API , it is
+	// derived from your account URL
+	ServiceURL *url.URL
+
 	// Token is the unique authorization token assigned to your FreshBooks account.
 	// Every request made the FreshBooks uses this token for HTTP basic authorization
 	// The token is based on your freshBooks password. It your FreshBooks password
 	// changes, so will your token.
-	Key string
-
-	// ServiceURL is the single point of entry to the FreshBooks API , it is
-	// derived from your account URL
-	ServiceURL *url.URL
+	Token string
 
 	// User agent used when communication with the FreshBooks API.
 	UserAgent string
@@ -36,33 +36,47 @@ type Client struct {
 	Invoices *InvoicesService
 }
 
-// NewClient Produces a new FreshBooks API client. Caller must provide the ServiceURL,
-// and a Authorization Token.
-func NewClient(serviceURL, key string) *Client {
+// NewClient Produces a new FreshBooks API client. Caller must either provide a
+// Autorization Token or a http.Client that will preform OAuth 1a authentication
+// for you (such as that provided by https://github.com/kurrik/oauth1a)
+// If a AutorizationToken and a nil client is provided, a http.DefaultClient
+// will be used.
+func NewClient(serviceURL, token string, httpClient *http.Client) (*Client, error) {
 
-	c := &Client{ServiceURL: serviceURL, Key: key, UserAgent: userAgent}
+	if serviceURL == "" {
+		return nil, errors.New("no serviceURL provided")
+	}
+	url, _ := url.Parse(serviceURL)
+
+	if token == "" && httpClient == nil {
+		return nil, errors.New("newclient requires either a valid authentication token or a http.Client capabale of handling authentication")
+	}
+
+	c := &Client{client: httpClient, ServiceURL: url, Token: token, UserAgent: userAgent}
 
 	c.Invoices = &InvoicesService{client: c}
 
-	return c
+	return c, nil
 }
 
 // NewRequest creates an API request. All FreshBooks requests are POSTs.
 func (c *Client) NewRequest(body interface{}) (*http.Request, error) {
 	if body == nil {
-		return nil, errors.New("newrequest requires a non nil request")
+		return nil, errors.New("newrequest requires a valid API request")
 	}
-	buf := new(bytes.Buffer)
 
-	err := xml.NewEncoder(buf).Encode(body)
+	xmlBody, err := xml.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
+	reader := bytes.NewReader([]byte(xml.Header + string(xmlBody)))
 
-	req, err := http.NewRequest("POST", c.ServiceURL, buf)
+	req, err := http.NewRequest("POST", c.ServiceURL.String(), reader)
 
+	if c.Token != "" {
+		req.SetBasicAuth(c.Token, "X")
+	}
 	req.Header.Add("User-Agent", c.UserAgent)
-	req.SetBasicAuth(c.Key, "X")
 
 	return req, nil
 }
