@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// InvoiceService handles communication with the issue related
+// InvoicesService handles communication with the issue related
 // methods of the FreshBooks API.
 //
 // FreshBooks API docs: http://developers.freshbooks.com/docs/invoices/
@@ -16,8 +16,8 @@ type InvoicesService struct {
 // Invoice represents a FreshBooks invoice
 type Invoice struct {
 	XMLName                 xml.Name   `xml:"invoice,omitempty"`
-	Id                      *int       `xml:"invoice_id,omitempty"`
-	ClientId                *int       `xml:"client_id,omitempty"`
+	ID                      *int       `xml:"invoice_id,omitempty"`
+	ClientID                *int       `xml:"client_id,omitempty"`
 	InvoiceNumber           *string    `xml:"number,omitempty"`
 	Amount                  *float32   `xml:"amount,omitempty"`
 	Currency                *string    `xml:"currency_code,omitempty"`
@@ -30,7 +30,7 @@ type Invoice struct {
 	Discount                *string    `xml:"discount,omitempty"`
 	Notes                   *string    `xml:"notes,omitempty"`
 	Terms                   *string    `xml:"terms,omitempty"`
-	RecordUrl               *string    `xml:"links>view,omitempty"`
+	RecordURL               *string    `xml:"links>view,omitempty"`
 	LastUpdated             *string    `xml:"updated,omitempty"`
 	RecurringInvoiceProfile *string    `xml:"recurring_id,omitempty"`
 	ClientName              *string    `xml:"organization,omitempty"`
@@ -54,7 +54,7 @@ type Invoice struct {
 // Line represents a Invoice Line Item that is a child of a FreshBooks invoice
 type Line struct {
 	// XMLName     xml.Name `xml:"line"`
-	LineId      *int     `xml:"line_id,omitempty"`
+	LineID      *int     `xml:"line_id,omitempty"`
 	Amount      *float32 `xml:"amount,omitempty"`
 	Name        *string  `xml:"name,omitempty"`
 	Description *string  `xml:"description,omitempty"`
@@ -75,7 +75,7 @@ func (s *InvoicesService) Get(id int) (*Invoice, *Response, error) {
 	var getInvoiceRequest struct {
 		Request
 		XMLName xml.Name `xml:"request"`
-		Id      int      `xml:"invoice_id"`
+		ID      int      `xml:"invoice_id"`
 	}
 	getInvoiceRequest.Id = id
 	getInvoiceRequest.Method = "invoice.get"

@@ -13,6 +13,7 @@ const (
 	userAgent      = "go-freshbooks/" + libraryVersion
 )
 
+// Client manages communication with the FreshBooks API.
 type Client struct {
 	Org       string
 	Key       string
@@ -23,6 +24,9 @@ type Client struct {
 	Invoices *InvoicesService
 }
 
+// NewClient Produces a new FreshBooks API client. Caller must provide the name for its
+// FreshBooks instance, and a valid Authentication Tokem for that instance.
+// TODO add links, and more details.
 func NewClient(org, key string) *Client {
 
 	baseURL := fmt.Sprintf("https://%s.freshbooks.com/api/2.1/xml-in", org)
@@ -37,7 +41,7 @@ func NewClient(org, key string) *Client {
 // NewRequest creates an API request. All FreshBooks requests are POSTs.
 func (c *Client) NewRequest(body interface{}) (*http.Request, error) {
 	if body == nil {
-		return nil, errors.New("NewRequest requires a non nil Request")
+		return nil, errors.New("newrequest requires a non nil request")
 	}
 	buf := new(bytes.Buffer)
 
