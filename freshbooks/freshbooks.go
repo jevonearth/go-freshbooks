@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"net/http"
 )
 
@@ -15,11 +14,10 @@ const (
 
 // Client manages communication with the FreshBooks API.
 type Client struct {
-	Org       string
-	Key       string
-	BaseURL   string
-	UserAgent string
-	client    http.Client
+	Key        string
+	ServiceURL string
+	UserAgent  string
+	client     http.Client
 
 	Invoices *InvoicesService
 }
@@ -27,11 +25,9 @@ type Client struct {
 // NewClient Produces a new FreshBooks API client. Caller must provide the name for its
 // FreshBooks instance, and a valid Authentication Tokem for that instance.
 // TODO add links, and more details.
-func NewClient(org, key string) *Client {
+func NewClient(serviceURL, key string) *Client {
 
-	baseURL := fmt.Sprintf("https://%s.freshbooks.com/api/2.1/xml-in", org)
-
-	c := &Client{BaseURL: baseURL, Org: org, Key: key, UserAgent: userAgent}
+	c := &Client{ServiceURL: serviceURL, Key: key, UserAgent: userAgent}
 
 	c.Invoices = &InvoicesService{client: c}
 
@@ -50,7 +46,7 @@ func (c *Client) NewRequest(body interface{}) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", c.BaseURL, buf)
+	req, err := http.NewRequest("POST", c.ServiceURL, buf)
 
 	req.Header.Add("User-Agent", c.UserAgent)
 	req.SetBasicAuth(c.Key, "X")

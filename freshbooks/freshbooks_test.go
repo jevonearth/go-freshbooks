@@ -4,41 +4,37 @@ import (
 	. "github.com/jevonearth/go-freshbooks/freshbooks"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"fmt"
 	"io/ioutil"
 )
 
 var _ = Describe("freshbooks.client", func() {
 
 	var (
-		testkey string
-		testorg string
+		serviceURL string
+		testkey    string
 	)
 
 	BeforeEach(func() {
-		testorg = "testorg"
+		serviceURL = "serviceURL"
 		testkey = "testkey!@#123"
 	})
 
 	It("Creating client ready for production use", func() {
 
-		client := NewClient(testorg, testkey)
-		url := fmt.Sprintf("https://%s.freshbooks.com/api/2.1/xml-in", testorg)
+		client := NewClient(serviceURL, testkey)
 
-		Expect(client.BaseURL).To(Equal(url))
-		Expect(client.Org).To(Equal(testorg))
+		Expect(client.ServiceURL).To(Equal(serviceURL))
 		Expect(client.Key).To(Equal(testkey))
 	})
 
 	It("Returns an error when given a nil Request", func() {
-		client := NewClient(testorg, testkey)
+		client := NewClient(serviceURL, testkey)
 		_, err := client.NewRequest(nil)
 		Expect(err.Error()).To(Equal("newrequest requires a non nil request"))
 	})
 
 	It("Creates a new POST request", func() {
-		client := NewClient(testorg, testkey)
+		client := NewClient(serviceURL, testkey)
 		r := Request{
 			Method: "FOO",
 		}
