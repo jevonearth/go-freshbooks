@@ -77,7 +77,7 @@ func (s *InvoicesService) Get(id int) (*Invoice, *Response, error) {
 		XMLName xml.Name `xml:"request"`
 		ID      int      `xml:"invoice_id"`
 	}
-	getInvoiceRequest.Id = id
+	getInvoiceRequest.ID = id
 	getInvoiceRequest.Method = "invoice.get"
 
 	req, err := s.client.NewRequest(&getInvoiceRequest)

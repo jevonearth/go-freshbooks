@@ -34,7 +34,7 @@ var _ = Describe("freshbooks.client", func() {
 	It("Returns an error when given a nil Request", func() {
 		client := NewClient(testorg, testkey)
 		_, err := client.NewRequest(nil)
-		Expect(err.Error()).To(Equal("NewRequest requires a non nil Request"))
+		Expect(err.Error()).To(Equal("newrequest requires a non nil request"))
 	})
 
 	It("Creates a new POST request", func() {
@@ -53,7 +53,6 @@ var _ = Describe("freshbooks.client", func() {
 	})
 
 	It("Sends an API request and returns the API response", func() {
-		
 
 	})
 
