@@ -67,19 +67,21 @@ type Line struct {
 	Type        *string  `xml:"type,omitempty"`
 }
 
-// InvoiceRequestQuery represents a API query for a single Invoice
-type InvoiceRequestQuery struct {
-	Request
-	XMLName xml.Name `xml:"request"`
-	ID      int      `xml:"invoice_id"`
-}
-
 // Get a single Invoice
 //
 // FreshBooks API Docs: http://developers.freshbooks.com/docs/invoices/#invoice.get
 func (s *InvoicesService) Get(id int) (*Invoice, *Response, error) {
 
-	getInvoiceRequest := InvoiceRequestQuery{
+	// getInvoiceRequest := InvoiceRequestQuery{
+	// 	Request: Request{Method: "invoice.get"},
+	// 	ID:      id,
+	// }
+
+	var getInvoiceRequest = struct {
+		Request
+		XMLName xml.Name `xml:"request"`
+		ID      int      `xml:"invoice_id"`
+	}{
 		Request: Request{Method: "invoice.get"},
 		ID:      id,
 	}

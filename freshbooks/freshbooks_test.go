@@ -57,7 +57,11 @@ var _ = Describe("freshbooks NewRequest", func() {
 
 	It("Produces a http.Request with a XML representation of v, and valid User-Agent header", func() {
 
-		inBody := InvoiceRequestQuery{
+		var inBody = struct {
+			Request
+			XMLName xml.Name `xml:"request"`
+			ID      int      `xml:"invoice_id"`
+		}{
 			Request: Request{Method: "invoice.get"},
 			ID:      1,
 		}
