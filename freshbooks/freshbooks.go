@@ -115,7 +115,11 @@ func CheckResponse(r *http.Response) error {
 // Response is a FreshBooks API response. This wraps the standard http.Response
 // returned from FreshBooks.
 type Response struct {
-	*http.Response
+	// *http.Response
+	XMLName          xml.Name `xml:"response"`
+	Status           string   `xml:"status,attr"`
+	ErrorDescription string   `xml:"error"`
+	ErrorCode        int      `xml:"code"`
 }
 
 // Request represents the base FreshBooks API request body. This struct is used to

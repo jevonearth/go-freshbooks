@@ -79,10 +79,18 @@ var _ = Describe("freshbooks NewRequest", func() {
 	})
 
 	It("Should produce an error when passed non encodeable struct", func() {
-		type T struct {
-			A map[int]interface{}
+
+		var t = struct {
+			Request
+			XMLName xml.Name `xml:"request"`
+			ID      int      `xml:"invoice_id"`
+			A       map[int]interface{}
+		}{
+			Request: Request{Method: "invoice.get"},
+			A:       nil,
 		}
-		_, err := client.NewRequest(&T{})
+
+		_, err := client.NewRequest(&t)
 		Expect(err.Error()).To(Equal("xml: unsupported type: map[int]interface {}"))
 	})
 
@@ -126,9 +134,15 @@ var _ = Describe("freshbooks Do http", func() {
 	})
 	It("Produces a POST to the local http/testing server", func() {
 		// inBody := Request{Method: "testpostmethod"}
-
-		type foo struct {
-			A string
+		var inBody = struct {
+			Request
+			XMLName xml.Name `xml:"request"`
+			ID      int      `xml:"invoice_id"`
+			A       string
+		}{
+			Request: Request{Method: "invoice.get"},
+			ID:      1,
+			A:       "a",
 		}
 
 		//Set up testing server
@@ -136,20 +150,30 @@ var _ = Describe("freshbooks Do http", func() {
 
 			Expect(r.Method).To(Equal("POST"))
 
-			fmt.Fprint(w, xml.Header+"<foo><A>b</A></foo>")
+			b, _ := ioutil.ReadAll(r.Body)
+			fmt.Printf("%s", string(b))
+
+			Expect(string(b)).To(Equal(xml.Header + `<request method="invoice.get"><invoice_id>1</invoice_id><A>a</A></request>`))
+
+			fmt.Fprint(w, xml.Header+`<response xmlns="http://www.freshbooks.com/api/" status="ok"><invoice><id>1</id></invoice></response>`)
 		})
 
 		//prep request
-		inBody := &foo{"a"}
+		// inBody := &foo{"a"}
 		req, _ := client.NewRequest(inBody)
 
 		//prep instance of foo to recieve response
-		outBody := new(foo)
+		//outBody := new(Invoice)
+		var getInvoiceResponse = struct {
+			Response
+			Invoice Invoice `xml:"invoice"`
+		}{}
 
 		//make request
-		_, err := client.Do(req, outBody)
+		_, err := client.Do(req, getInvoiceResponse)
 
-		Expect(outBody.A).To(Equal("b"))
+		Expect(getInvoiceResponse.Status).To(Equal("ok"))
+		Expect(getInvoiceResponse.Invoice.ID).To(Equal(Int(1)))
 		Expect(err).To(BeNil())
 	})
 
