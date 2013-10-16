@@ -65,7 +65,7 @@ var _ = Describe("freshbooks NewRequest", func() {
 			Request: Request{Method: "invoice.get"},
 			ID:      1,
 		}
-		outBody := "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request method=\"invoice.get\"><invoice_id>1</invoice_id></request>"
+		outBody := xml.Header + `<request method="invoice.get"><invoice_id>1</invoice_id></request>`
 
 		req, err := client.NewRequest(inBody)
 
