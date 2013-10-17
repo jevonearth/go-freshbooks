@@ -91,7 +91,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	}
 	defer resp.Body.Close()
 
-	response := &Response{Response: resp}
+	response := new(Response)
 
 	err = CheckResponse(resp)
 	if err != nil {
@@ -101,8 +101,10 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	}
 
 	if v != nil {
-		err = xml.NewDecoder(resp.Body).Decode(v)
+		err = xml.NewDecoder(resp.Body).Decode(response)
 	}
+
+	xml.Unmarshal(response.PayLoad, v)
 
 	return response, err
 }
@@ -120,6 +122,7 @@ type Response struct {
 	Status           string   `xml:"status,attr"`
 	ErrorDescription string   `xml:"error"`
 	ErrorCode        int      `xml:"code"`
+	PayLoad          []byte   `xml:",innerxml"`
 }
 
 // Request represents the base FreshBooks API request body. This struct is used to

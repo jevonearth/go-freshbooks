@@ -151,29 +151,20 @@ var _ = Describe("freshbooks Do http", func() {
 			Expect(r.Method).To(Equal("POST"))
 
 			b, _ := ioutil.ReadAll(r.Body)
-			fmt.Printf("%s", string(b))
 
 			Expect(string(b)).To(Equal(xml.Header + `<request method="invoice.get"><invoice_id>1</invoice_id><A>a</A></request>`))
 
-			fmt.Fprint(w, xml.Header+`<response xmlns="http://www.freshbooks.com/api/" status="ok"><invoice><id>1</id></invoice></response>`)
+			fmt.Fprint(w, xml.Header+`<response xmlns="http://www.freshbooks.com/api/" status="ok"><invoice><invoice_id>1</invoice_id></invoice></response>`)
 		})
 
-		//prep request
-		// inBody := &foo{"a"}
 		req, _ := client.NewRequest(inBody)
 
-		//prep instance of foo to recieve response
-		//outBody := new(Invoice)
-		var getInvoiceResponse = struct {
-			Response
-			Invoice Invoice `xml:"invoice"`
-		}{}
+		invoice := new(Invoice)
 
-		//make request
-		_, err := client.Do(req, getInvoiceResponse)
+		_, err := client.Do(req, invoice)
 
-		Expect(getInvoiceResponse.Status).To(Equal("ok"))
-		Expect(getInvoiceResponse.Invoice.ID).To(Equal(Int(1)))
+		Expect(invoice.ID).To(Equal(Int(1)))
+
 		Expect(err).To(BeNil())
 	})
 

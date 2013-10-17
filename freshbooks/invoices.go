@@ -15,6 +15,7 @@ type InvoicesService struct {
 
 // Invoice represents a FreshBooks invoice
 type Invoice struct {
+	IDnerd                  int       //      `xml:"invoice_id,omitempty"`
 	XMLName                 xml.Name  `xml:"invoice"`
 	ID                      *int      `xml:"invoice_id,omitempty"`
 	ClientID                *int      `xml:"client_id,omitempty"`
@@ -72,11 +73,6 @@ type Line struct {
 // FreshBooks API Docs: http://developers.freshbooks.com/docs/invoices/#invoice.get
 func (s *InvoicesService) Get(id int) (*Invoice, *Response, error) {
 
-	// getInvoiceRequest := InvoiceRequestQuery{
-	// 	Request: Request{Method: "invoice.get"},
-	// 	ID:      id,
-	// }
-
 	var getInvoiceRequest = struct {
 		Request
 		XMLName xml.Name `xml:"request"`
@@ -86,12 +82,9 @@ func (s *InvoicesService) Get(id int) (*Invoice, *Response, error) {
 		ID:      id,
 	}
 
-	var getInvoiceResponse struct {
-		Response
-		Invoice Invoice
-	}
+	getInvoiceResponse := new(Invoice)
 
-	req, err := s.client.NewRequest(&getInvoiceRequest)
+	req, err := s.client.NewRequest(getInvoiceRequest)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -102,5 +95,5 @@ func (s *InvoicesService) Get(id int) (*Invoice, *Response, error) {
 		return nil, resp, err
 	}
 
-	return &getInvoiceResponse.Invoice, resp, err
+	return getInvoiceResponse, resp, err
 }
